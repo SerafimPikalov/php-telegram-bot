@@ -433,6 +433,23 @@ class Telegram
 
         DB::insertRequest($this->update);
 
+        if ($type === 'command') {
+            $conversation = new Conversation(
+                $this->update->getMessage()->getFrom()->getId(),
+                $this->update->getMessage()->getChat()->getId()
+            );
+            //Fetch conversation command if it exists and execute it
+            if ($conversation->exists() && ($newcommand = $conversation->getCommand())) {
+                \SnowBro\Utils\MyLogger::log("Continure conv. Go to command: $newcommand");
+                if ($conversation->notes) {
+                    $conversation->notes = [];
+                }
+                $conversation->notes = ['interapt' => true, 'interaptbycmd'=>$command];
+                $conversation->update();
+                return $this->executeCommand($newcommand);
+            }
+        }
+
         return $this->executeCommand($command);
     }
 
