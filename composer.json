@@ -1,19 +1,14 @@
 {
     "name": "serafimpikalov/telegram-bot",
     "type": "library",
-    "description": "PHP telegram bot",
+    "description": "PHP telegram bot by LONGMAN (https://github.com/akalongman/php-telegram-bot) with modification by me for own using ",
     "keywords": ["telegram", "bot", "api"],
     "license": "MIT",
-    "homepage": "https://github.com/akalongman/php-telegram-bot",
-    "support": {
-        "issues": "https://github.com/akalongman/php-telegram-bot/issues",
-        "source": "https://github.com/akalongman/php-telegram-bot"
-    },
+    "homepage": "https://github.com/SerafimPikalov/php-telegram-bot/",
     "authors": [
         {
-            "name": "Avtandil Kikabidze aka LONGMAN",
-            "email": "akalongman@gmail.com",
-            "homepage": "http://longman.me",
+            "name": "Serafim Pikalov",
+            "email": "serafim.pikalov@gmail.com",
             "role": "Developer"
         }
     ],
