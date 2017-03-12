@@ -25,7 +25,7 @@ use Longman\TelegramBot\Request;
 class CancelCommand extends UserCommand
 {
     //Don't need it at SnowBro
-    protected $enabled = true;
+    protected $enabled = false;
     /**
      * @var string
      */

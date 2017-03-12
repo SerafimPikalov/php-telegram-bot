@@ -19,7 +19,7 @@ use Longman\TelegramBot\Request;
 class SlapCommand extends UserCommand
 {
     //Don't need it at SnowBro
-    protected $enabled = true;
+    protected $enabled = false;
     /**
      * @var string
      */

@@ -23,7 +23,7 @@ use Longman\TelegramBot\TelegramLog;
 class WeatherCommand extends UserCommand
 {
     //Don't need it at SnowBro
-    protected $enabled = true;
+    protected $enabled = false;
     /**
      * @var string
      */

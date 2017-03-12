@@ -19,7 +19,7 @@ use Longman\TelegramBot\Request;
 class EchoCommand extends UserCommand
 {
     //Don't need it at SnowBro
-    protected $enabled = true;
+    protected $enabled = false;
     /**
      * @var string
      */

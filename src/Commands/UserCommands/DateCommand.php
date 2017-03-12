@@ -24,7 +24,7 @@ use Longman\TelegramBot\TelegramLog;
 class DateCommand extends UserCommand
 {
     //Don't need it at SnowBro
-    protected $enabled = true;
+    protected $enabled = false;
     /**
      * @var string
      */
