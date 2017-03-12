@@ -23,6 +23,8 @@ use Longman\TelegramBot\Request;
  */
 class WhoamiCommand extends UserCommand
 {
+    //Don't need it at SnowBro
+    protected $enabled = true;
     /**
      * @var string
      */
