@@ -433,7 +433,7 @@ class Telegram
 
         DB::insertRequest($this->update);
 
-        if ($type === 'command') {
+        if ($update_type === 'message' && $type === 'command') {
             $conversation = new Conversation(
                 $this->update->getMessage()->getFrom()->getId(),
                 $this->update->getMessage()->getChat()->getId()
