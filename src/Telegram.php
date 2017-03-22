@@ -441,11 +441,16 @@ class Telegram
             //Fetch conversation command if it exists and execute it
             if ($conversation->exists() && ($newcommand = $conversation->getCommand())) {
                 \SnowBro\Utils\MyLogger::log("Continure conv. Go to command: $newcommand");
-                if ($conversation->notes) {
+                if (!isset($conversation->notes)) {
                     $conversation->notes = [];
                 }
-                $conversation->notes = ['interapt' => true, 'interaptbycmd'=>$command];
-                $conversation->update();
+                if (!isset($conversation->notes['interapt'])) {
+                        $conversation->notes['interapt'] = 1;
+                } else {
+                        $conversation->notes['interapt']++;
+                }
+                $conversation->notes['interaptbycmd'] = $command;
+		$conversation->update();
                 return $this->executeCommand($newcommand);
             }
         }
