@@ -18,13 +18,13 @@ use Longman\TelegramBot\Entities\InlineKeyboardButton;
  * @author          Avtandil Kikabidze <akalongman@gmail.com>
  * @copyright       Avtandil Kikabidze <akalongman@gmail.com>
  * @license         http://opensource.org/licenses/mit-license.php  The MIT License (MIT)
- * @link            http://www.github.com/akalongman/php-telegram-bot
+ * @link            https://github.com/php-telegram-bot/core
  */
 class InlineKeyboardTest extends TestCase
 {
     private function getRandomButton($text)
     {
-        $random_params = ['url', 'callback_data', 'switch_inline_query', 'switch_inline_query_current_chat'];
+        $random_params = ['url', 'callback_data', 'switch_inline_query', 'switch_inline_query_current_chat', 'pay'];
         $param         = $random_params[array_rand($random_params, 1)];
         $data          = [
             'text' => $text,
