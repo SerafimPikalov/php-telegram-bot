@@ -19,6 +19,11 @@ use Longman\TelegramBot\Request;
 class CallbackqueryCommand extends SystemCommand
 {
     /**
+     * @var callable[]
+     */
+    protected static $callbacks = [];
+
+    /**
      * @var string
      */
     protected $name = 'callbackquery';
@@ -31,7 +36,7 @@ class CallbackqueryCommand extends SystemCommand
     /**
      * @var string
      */
-    protected $version = '1.1.0';
+    protected $version = '1.0.0';
 
     /**
      * Command execute method
@@ -41,18 +46,26 @@ class CallbackqueryCommand extends SystemCommand
      */
     public function execute()
     {
-        $update            = $this->getUpdate();
-        $callback_query    = $update->getCallbackQuery();
-        $callback_query_id = $callback_query->getId();
-        $callback_data     = $callback_query->getData();
+        //$callback_query = $this->getUpdate()->getCallbackQuery();
+        //$user_id        = $callback_query->getFrom()->getId();
+        //$query_id       = $callback_query->getId();
+        //$query_data     = $callback_query->getData();
 
-        $data = [
-            'callback_query_id' => $callback_query_id,
-            'text'              => 'Hello World!',
-            'show_alert'        => $callback_data === 'thumb up',
-            'cache_time'        => 5,
-        ];
+        // Call all registered callbacks.
+        foreach (self::$callbacks as $callback) {
+            $callback($this->getUpdate()->getCallbackQuery());
+        }
 
-        return Request::answerCallbackQuery($data);
+        return Request::answerCallbackQuery(['callback_query_id' => $this->getUpdate()->getCallbackQuery()->getId()]);
+    }
+
+    /**
+     * Add a new callback handler for callback queries.
+     *
+     * @param $callback
+     */
+    public static function addCallbackHandler($callback)
+    {
+        self::$callbacks[] = $callback;
     }
 }

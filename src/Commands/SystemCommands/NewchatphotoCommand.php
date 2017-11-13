@@ -20,7 +20,7 @@ class NewchatphotoCommand extends SystemCommand
     /**
      * @var string
      */
-    protected $name = 'Newchatphoto';
+    protected $name = 'newchatphoto';
 
     /**
      * @var string
@@ -30,7 +30,7 @@ class NewchatphotoCommand extends SystemCommand
     /**
      * @var string
      */
-    protected $version = '1.1.0';
+    protected $version = '1.0.0';
 
     /**
      * Command execute method

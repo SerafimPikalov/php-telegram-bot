@@ -11,10 +11,27 @@
 namespace Longman\TelegramBot\Commands;
 
 use Longman\TelegramBot\DB;
+use Longman\TelegramBot\Entities\CallbackQuery;
+use Longman\TelegramBot\Entities\ChosenInlineResult;
+use Longman\TelegramBot\Entities\InlineQuery;
+use Longman\TelegramBot\Entities\Message;
+use Longman\TelegramBot\Entities\Update;
 use Longman\TelegramBot\Request;
 use Longman\TelegramBot\Telegram;
-use Longman\TelegramBot\Entities\Update;
 
+/**
+ * Class Command
+ *
+ * Base class for commands. It includes some helper methods that can fetch data directly from the Update object.
+ *
+ * @method Message             getMessage()            Optional. New incoming message of any kind — text, photo, sticker, etc.
+ * @method Message             getEditedMessage()      Optional. New version of a message that is known to the bot and was edited
+ * @method Message             getChannelPost()        Optional. New post in the channel, can be any kind — text, photo, sticker, etc.
+ * @method Message             getEditedChannelPost()  Optional. New version of a post in the channel that is known to the bot and was edited
+ * @method InlineQuery         getInlineQuery()        Optional. New incoming inline query
+ * @method ChosenInlineResult  getChosenInlineResult() Optional. The result of an inline query that was chosen by a user and sent to their chat partner.
+ * @method CallbackQuery       getCallbackQuery()      Optional. New incoming callback query
+ */
 abstract class Command
 {
     /**
@@ -30,13 +47,6 @@ abstract class Command
      * @var \Longman\TelegramBot\Entities\Update
      */
     protected $update;
-
-    /**
-     * Message object
-     *
-     * @var \Longman\TelegramBot\Entities\Message
-     */
-    protected $message;
 
     /**
      * Name
@@ -60,6 +70,13 @@ abstract class Command
     protected $usage = 'Command usage';
 
     /**
+     * Show in Help
+     *
+     * @var bool
+     */
+    protected $show_in_help = true;
+
+    /**
      * Version
      *
      * @var string
@@ -79,6 +96,13 @@ abstract class Command
      * @var boolean
      */
     protected $need_mysql = false;
+
+    /*
+    * Make sure this command only executes on a private chat.
+    *
+    * @var bool
+    */
+    protected $private_only = false;
 
     /**
      * Command config
@@ -110,8 +134,7 @@ abstract class Command
     public function setUpdate(Update $update = null)
     {
         if ($update !== null) {
-            $this->update  = $update;
-            $this->message = $this->update->getMessage();
+            $this->update = $update;
         }
 
         return $this;
@@ -127,6 +150,24 @@ abstract class Command
     {
         if ($this->need_mysql && !($this->telegram->isDbEnabled() && DB::isDbConnected())) {
             return $this->executeNoDb();
+        }
+
+        if ($this->isPrivateOnly() && $this->removeNonPrivateMessage()) {
+            $message = $this->getMessage();
+
+            if ($user = $message->getFrom()) {
+                return Request::sendMessage([
+                    'chat_id'    => $user->getId(),
+                    'parse_mode' => 'Markdown',
+                    'text'       => sprintf(
+                        "/%s command is only available in a private chat.\n(`%s`)",
+                        $this->getName(),
+                        $message->getText()
+                    ),
+                ]);
+            }
+
+            return Request::emptyResponse();
         }
 
         return $this->execute();
@@ -171,13 +212,21 @@ abstract class Command
     }
 
     /**
-     * Get message object
+     * Relay any non-existing function calls to Update object.
      *
-     * @return \Longman\TelegramBot\Entities\Message
+     * This is purely a helper method to make requests from within execute() method easier.
+     *
+     * @param string $name
+     * @param array  $arguments
+     *
+     * @return Command
      */
-    public function getMessage()
+    public function __call($name, array $arguments)
     {
-        return $this->message;
+        if ($this->update === null) {
+            return null;
+        }
+        return call_user_func_array([$this->update, $name], $arguments);
     }
 
     /**
@@ -253,6 +302,16 @@ abstract class Command
     }
 
     /**
+     * Get Show in Help
+     *
+     * @return bool
+     */
+    public function showInHelp()
+    {
+        return $this->show_in_help;
+    }
+
+    /**
      * Check if command is enabled
      *
      * @return bool
@@ -260,6 +319,16 @@ abstract class Command
     public function isEnabled()
     {
         return $this->enabled;
+    }
+
+    /**
+     * If this command is intended for private chats only.
+     *
+     * @return bool
+     */
+    public function isPrivateOnly()
+    {
+        return $this->private_only;
     }
 
     /**
@@ -290,5 +359,71 @@ abstract class Command
     public function isUserCommand()
     {
         return ($this instanceof UserCommand);
+    }
+
+    /**
+     * Delete the current message if it has been called in a non-private chat.
+     *
+     * @return bool
+     */
+    protected function removeNonPrivateMessage()
+    {
+        $message = $this->getMessage() ?: $this->getEditedMessage();
+
+        if ($message) {
+            $chat = $message->getChat();
+
+            if (!$chat->isPrivateChat()) {
+                // Delete the falsely called command message.
+                Request::deleteMessage([
+                    'chat_id'    => $chat->getId(),
+                    'message_id' => $message->getMessageId(),
+                ]);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Helper to reply to a chat directly.
+     *
+     * @param string $text
+     * @param array  $data
+     *
+     * @return \Longman\TelegramBot\Entities\ServerResponse
+     */
+    public function replyToChat($text, array $data = [])
+    {
+        if ($message = $this->getMessage() ?: $this->getEditedMessage() ?: $this->getChannelPost() ?: $this->getEditedChannelPost()) {
+            return Request::sendMessage(array_merge([
+                'chat_id' => $message->getChat()->getId(),
+                'text'    => $text,
+            ], $data));
+        }
+
+        return Request::emptyResponse();
+    }
+
+    /**
+     * Helper to reply to a user directly.
+     *
+     * @param string $text
+     * @param array  $data
+     *
+     * @return \Longman\TelegramBot\Entities\ServerResponse
+     */
+    public function replyToUser($text, array $data = [])
+    {
+        if ($message = $this->getMessage() ?: $this->getEditedMessage()) {
+            return Request::sendMessage(array_merge([
+                'chat_id' => $message->getFrom()->getId(),
+                'text'    => $text,
+            ], $data));
+        }
+
+        return Request::emptyResponse();
     }
 }

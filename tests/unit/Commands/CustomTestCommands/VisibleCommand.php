@@ -14,31 +14,34 @@ use Longman\TelegramBot\Commands\UserCommand;
 use Longman\TelegramBot\Request;
 
 /**
- * User "/echo" command
+ * Test "/visible" command to test $show_in_help
  */
-class EchoCommand extends UserCommand
+class VisibleCommand extends UserCommand
 {
-    //Don't need it at SnowBro
-    protected $enabled = false;
     /**
      * @var string
      */
-    protected $name = 'echo';
+    protected $name = 'visible';
 
     /**
      * @var string
      */
-    protected $description = 'Show text';
+    protected $description = 'This command is visible in help';
 
     /**
      * @var string
      */
-    protected $usage = '/echo <text>';
+    protected $usage = '/visible';
 
     /**
      * @var string
      */
-    protected $version = '1.1.0';
+    protected $version = '1.0.0';
+
+    /**
+     * @var bool
+     */
+    protected $show_in_help = true;
 
     /**
      * Command execute method
@@ -48,19 +51,6 @@ class EchoCommand extends UserCommand
      */
     public function execute()
     {
-        $message = $this->getMessage();
-        $chat_id = $message->getChat()->getId();
-        $text    = trim($message->getText(true));
-
-        if ($text === '') {
-            $text = 'Command usage: ' . $this->getUsage();
-        }
-
-        $data = [
-            'chat_id' => $chat_id,
-            'text'    => $text,
-        ];
-
-        return Request::sendMessage($data);
+        return Request::emptyResponse();
     }
 }
