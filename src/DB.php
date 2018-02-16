@@ -493,7 +493,8 @@ class DB
         $update_type = $update->getUpdateType();
 
         if (count(self::selectTelegramUpdate(1, $update_id)) === 1) {
-            throw new TelegramException('Duplicate update received!');
+            echo 'Duplicate update received!'.print_r($update_id);
+            //throw new TelegramException('Duplicate update received!');
         }
 
         // @todo Make this simpler: if ($message = $update->getMessage()) ...
